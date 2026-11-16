@@ -1,0 +1,11 @@
+ppa-reimplementation
+Copyright 2026 Hiroaki Takahara
+
+This product includes an unofficial reimplementation of:
+  Probabilistic Prompt Adaptation (PPA)
+  Takayuki Hara and Yuya Otsuka.
+  "Probabilistic Prompt Adaptation for Unified Image Aesthetics and
+  Quality Assessment." CVPR 2026.
+
+The reimplementation is based solely on the published paper. It is not
+affiliated with, nor endorsed by, the original authors or their institution.
