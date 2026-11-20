@@ -14,8 +14,8 @@ export const AttributeRadar: React.FC<AttributeRadarProps> = ({
   // SVG Radar Chart Math
   const size = 320;
   const center = size / 2;
-  const radius = center - 45;
-  const total = aestheticAttributes.length;
+  const radius = center - 52;
+  const total = Math.max(1, aestheticAttributes.length);
 
   const getCoordinates = (index: number, value: number) => {
     const angle = (Math.PI * 2 / total) * index - Math.PI / 2;
@@ -38,7 +38,7 @@ export const AttributeRadar: React.FC<AttributeRadarProps> = ({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      {/* 8-Axis Aesthetic Radar Chart */}
+      {/* Aesthetic Radar Chart */}
       <div className="lg:col-span-7 glass-panel rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
@@ -53,12 +53,13 @@ export const AttributeRadar: React.FC<AttributeRadarProps> = ({
             </div>
           </div>
           <span className="text-xs px-2 py-0.5 rounded-md font-mono bg-cyan-950/60 text-cyan-400 border border-cyan-800/60">
-            8 Attributes
+            {aestheticAttributes.length} Attributes
           </span>
         </div>
 
         <div className="flex items-center justify-center py-2">
-          <svg className="w-full max-w-[340px] aspect-square" viewBox={`0 0 ${size} ${size}`}>
+          <svg className="w-full max-w-[340px] aspect-square overflow-visible" viewBox={`0 0 ${size} ${size}`}>
+
             {/* Concentric grid polygons */}
             {gridLevels.map((lvl, idx) => {
               const pts = Array.from({ length: total })

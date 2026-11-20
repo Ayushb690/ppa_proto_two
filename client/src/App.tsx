@@ -22,7 +22,9 @@ export function App() {
 
   // Poll backend health once on mount
   useEffect(() => {
-    checkBackendHealth().then(setHealth);
+    checkBackendHealth().then((status) => {
+      setHealth(status);
+    });
   }, []);
 
   const handleImageSelected = async (file: File | null, url: string | null, seedScore?: number) => {
@@ -37,8 +39,24 @@ export function App() {
         if (isLive && !health.online) {
           setHealth({ online: true, device: result.device });
         }
+      } else if (url && health.online) {
+        // Evaluate preset sample through live model if backend is online
+        try {
+          const resp = await fetch(url);
+          const blob = await resp.blob();
+          const sampleFile = new File([blob], 'sample.jpg', { type: blob.type || 'image/jpeg' });
+          const { result, isLive } = await analyzeImage(sampleFile);
+          setAnalysisResult(result);
+          if (isLive && !health.online) {
+            setHealth({ online: true, device: result.device });
+          }
+        } catch {
+          if (seedScore !== undefined) {
+            setAnalysisResult(generatePpaAnalysis(seedScore));
+          }
+        }
       } else if (seedScore !== undefined) {
-        // Preset sample image selected
+        // Preset sample image selected (offline simulation fallback)
         await new Promise((r) => setTimeout(r, 300));
         setAnalysisResult(generatePpaAnalysis(seedScore));
       }
@@ -69,7 +87,7 @@ export function App() {
           <div className="flex items-center space-x-3 text-xs font-mono text-slate-400 bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-800 self-start md:self-auto">
             <span className="flex items-center space-x-1.5">
               <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Weights: {health.online ? 'best.pt' : 'PARA Checkpoint'}</span>
+              <span>Weights: {health.online ? 'best.pt (Epoch 3)' : 'PARA Checkpoint'}</span>
             </span>
             <span>·</span>
             <span>28.68M Params</span>
@@ -110,10 +128,10 @@ export function App() {
               </div>
               <button
                 onClick={() => setActiveTab('database')}
-                className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-xs transition-all flex items-center space-x-1.5 shadow-lg shadow-cyan-500/20 shrink-0"
+                className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-xs transition-all flex items-center space-x-2 shrink-0 shadow-lg shadow-cyan-500/20"
               >
-                <span>Open Prompt Inspector</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>View Full Prompt Pool</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -137,7 +155,7 @@ export function App() {
           <div className="flex items-center space-x-4">
             <span className="text-slate-400">PARA Benchmark (GIAA)</span>
             <span>·</span>
-            <span className="text-cyan-400">SRCC: 0.9164 / PLCC: 0.9456</span>
+            <span className="text-cyan-400">SRCC: 0.9155 / PLCC: 0.9078</span>
           </div>
         </div>
       </footer>

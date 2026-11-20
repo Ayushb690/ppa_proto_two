@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Server, Cpu, ExternalLink, Image as ImageIcon, GitCompare, Database } from 'lucide-react';
+import { Sparkles, ExternalLink, Image as ImageIcon, GitCompare, Database } from 'lucide-react';
 import { HealthStatus } from '../api';
 
 interface HeaderProps {
@@ -76,11 +76,11 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, health 
                   ? 'bg-emerald-950/60 border-emerald-800 text-emerald-400'
                   : 'bg-slate-900 border-slate-800 text-slate-400'
               }`}
-              title={health.online ? `FastAPI Server Online (${health.device})` : 'Offline (Client Simulation Active)'}
+              title={health.online ? `API Server Live (${health.device})` : 'Offline (Client Simulation Active)'}
             >
               <span className={`w-2 h-2 rounded-full ${health.online ? 'bg-emerald-500 animate-pulse' : 'bg-slate-500'}`} />
               <span className="hidden md:inline font-mono">
-                {health.online ? `API: ${health.device}` : 'Demo Simulation'}
+                {health.online ? `API: ${health.device || 'Live'}` : 'Demo Simulation'}
               </span>
             </div>
 

@@ -92,18 +92,6 @@ def build_dataloaders(cfg: Config, preprocess) -> tuple[DataLoader, DataLoader, 
     )
     train_df, val_df = split_train_val(full_train)
 
-    # Use only 5,000 training images
-   # TEMPORARY: quick training sanity check
-    train_df = train_df.sample(
-    n=min(128, len(train_df)),
-    random_state=42
-    ).reset_index(drop=True)
-
-    val_df = val_df.sample(
-    n=min(64, len(val_df)),
-    random_state=42
-    ).reset_index(drop=True)
-
     train_ds = ParaGiaaDataset(train_df, img_root, preprocess, cfg)
     val_ds = ParaGiaaDataset(val_df, img_root, preprocess, cfg)
     test_ds = ParaGiaaDataset.from_csv(ann / "PARA-GiaaTest.csv", img_root, preprocess, cfg)

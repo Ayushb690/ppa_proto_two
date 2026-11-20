@@ -1,31 +1,47 @@
 import React, { useState } from 'react';
-import { GitCompare, Trophy, ArrowRight, UploadCloud, CheckCircle } from 'lucide-react';
+import { GitCompare, Trophy, ArrowRight, UploadCloud, CheckCircle, Loader2 } from 'lucide-react';
 import { SAMPLE_IMAGES, generatePpaAnalysis } from '../mockData';
 import { AnalysisResult } from '../types';
+import { analyzeImage } from '../api';
 
 export const CompareView: React.FC = () => {
   const [imgAUrl, setImgAUrl] = useState<string>(SAMPLE_IMAGES[0].url);
   const [imgBUrl, setImgBUrl] = useState<string>(SAMPLE_IMAGES[1].url);
   const [resultA, setResultA] = useState<AnalysisResult>(generatePpaAnalysis(SAMPLE_IMAGES[0].expectedScore));
   const [resultB, setResultB] = useState<AnalysisResult>(generatePpaAnalysis(SAMPLE_IMAGES[1].expectedScore));
+  const [loadingA, setLoadingA] = useState<boolean>(false);
+  const [loadingB, setLoadingB] = useState<boolean>(false);
 
-  const handleUploadA = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUploadA = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const url = URL.createObjectURL(file);
       setImgAUrl(url);
-      setResultA(generatePpaAnalysis(3.2 + Math.random() * 1.5));
+      setLoadingA(true);
+      try {
+        const { result } = await analyzeImage(file);
+        setResultA(result);
+      } finally {
+        setLoadingA(false);
+      }
     }
   };
 
-  const handleUploadB = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUploadB = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const url = URL.createObjectURL(file);
       setImgBUrl(url);
-      setResultB(generatePpaAnalysis(3.2 + Math.random() * 1.5));
+      setLoadingB(true);
+      try {
+        const { result } = await analyzeImage(file);
+        setResultB(result);
+      } finally {
+        setLoadingB(false);
+      }
     }
   };
+
 
   const isAWinner = resultA.rawScore >= resultB.rawScore;
   const scoreDiff = Math.abs(resultA.rawScore - resultB.rawScore);
@@ -86,7 +102,13 @@ export const CompareView: React.FC = () => {
 
           <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-black/60 mb-4">
             <img src={imgAUrl} alt="Subject A" className="w-full h-full object-contain" />
-            {isAWinner && (
+            {loadingA && (
+              <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center space-y-2 backdrop-blur-sm">
+                <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
+                <span className="text-xs font-mono text-cyan-300">Evaluating PPA...</span>
+              </div>
+            )}
+            {!loadingA && isAWinner && (
               <div className="absolute top-3 right-3 bg-cyan-500 text-slate-950 px-2.5 py-1 rounded-md text-xs font-bold font-mono flex items-center space-x-1 shadow-md">
                 <CheckCircle className="w-3.5 h-3.5" />
                 <span>Winner</span>
@@ -129,7 +151,13 @@ export const CompareView: React.FC = () => {
 
           <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-black/60 mb-4">
             <img src={imgBUrl} alt="Subject B" className="w-full h-full object-contain" />
-            {!isAWinner && (
+            {loadingB && (
+              <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center space-y-2 backdrop-blur-sm">
+                <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
+                <span className="text-xs font-mono text-blue-300">Evaluating PPA...</span>
+              </div>
+            )}
+            {!loadingB && !isAWinner && (
               <div className="absolute top-3 right-3 bg-blue-500 text-slate-950 px-2.5 py-1 rounded-md text-xs font-bold font-mono flex items-center space-x-1 shadow-md">
                 <CheckCircle className="w-3.5 h-3.5" />
                 <span>Winner</span>
