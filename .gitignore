@@ -78,3 +78,11 @@ Desktop.ini
 .directory
 .Trash-*
 .nfs*
+
+# ===== Documentation & Audit Reports =====
+INFERENCE_GUIDE.md
+MODEL_ARTIFACT_AUDIT.md
+MODEL_INTEGRATION.md
+plan.md
+CODEBASE_ANALYSIS.md
+
