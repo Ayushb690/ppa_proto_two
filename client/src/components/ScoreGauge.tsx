@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, Zap, Activity, Layers } from 'lucide-react';
+import { Award, Zap, Layers } from 'lucide-react';
 import { AnalysisResult } from '../types';
 
 interface ScoreGaugeProps {
@@ -99,7 +99,7 @@ export const ScoreGauge: React.FC<ScoreGaugeProps> = ({ result }) => {
           </p>
 
           {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/80">
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
             <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-800">
               <div className="flex items-center space-x-1 text-slate-400 text-[10px] uppercase font-mono">
                 <Zap className="w-3 h-3 text-amber-400" />
@@ -107,16 +107,6 @@ export const ScoreGauge: React.FC<ScoreGaugeProps> = ({ result }) => {
               </div>
               <p className="text-xs font-mono font-semibold text-slate-200 mt-0.5">
                 {result.inferenceTimeMs} ms
-              </p>
-            </div>
-
-            <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-800">
-              <div className="flex items-center space-x-1 text-slate-400 text-[10px] uppercase font-mono">
-                <Activity className="w-3 h-3 text-cyan-400" />
-                <span>Gaussian σ</span>
-              </div>
-              <p className="text-xs font-mono font-semibold text-slate-200 mt-0.5">
-                0.1 (Eq. 4)
               </p>
             </div>
 

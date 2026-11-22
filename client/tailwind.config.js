@@ -8,6 +8,21 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Deep obsidian & true black theme mapping
+        slate: {
+          950: '#000000',
+          900: '#080808',
+          850: '#111111',
+          800: '#1a1a1a',
+          700: '#282828',
+          600: '#404040',
+          500: '#737373',
+          400: '#a3a3a3',
+          300: '#d4d4d4',
+          200: '#e5e5e5',
+          100: '#f5f5f5',
+          50: '#fafafa',
+        },
         brand: {
           50: '#f0f7ff',
           100: '#e0effe',

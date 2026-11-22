@@ -115,7 +115,7 @@ export const AttributeRadar: React.FC<AttributeRadarProps> = ({
                   cy={y}
                   r="4"
                   fill="#06b6d4"
-                  stroke="#0f172a"
+                  stroke="#000000"
                   strokeWidth="2"
                   className="transition-all duration-700"
                 />

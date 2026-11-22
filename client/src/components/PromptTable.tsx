@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, ArrowUpDown } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { PromptItem } from '../types';
 
 interface PromptTableProps {
@@ -35,7 +35,7 @@ export const PromptTable: React.FC<PromptTableProps> = ({ prompts }) => {
         <div>
           <h3 className="text-base font-semibold text-white">Full Prompt Pool Analysis</h3>
           <p className="text-xs text-slate-400 font-mono">
-            Examining 260 antonym prompt pairs (CVPR 2026 Supp. Tables S6–S9)
+            Examining 260 antonym prompt pairs across 4 categories
           </p>
         </div>
 

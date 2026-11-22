@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GitCompare, Trophy, ArrowRight, UploadCloud, CheckCircle, Loader2 } from 'lucide-react';
+import { Trophy, UploadCloud, CheckCircle, Loader2 } from 'lucide-react';
 import { SAMPLE_IMAGES, generatePpaAnalysis } from '../mockData';
 import { AnalysisResult } from '../types';
 import { analyzeImage } from '../api';
@@ -7,8 +7,8 @@ import { analyzeImage } from '../api';
 export const CompareView: React.FC = () => {
   const [imgAUrl, setImgAUrl] = useState<string>(SAMPLE_IMAGES[0].url);
   const [imgBUrl, setImgBUrl] = useState<string>(SAMPLE_IMAGES[1].url);
-  const [resultA, setResultA] = useState<AnalysisResult>(generatePpaAnalysis(SAMPLE_IMAGES[0].expectedScore));
-  const [resultB, setResultB] = useState<AnalysisResult>(generatePpaAnalysis(SAMPLE_IMAGES[1].expectedScore));
+  const [resultA, setResultA] = useState<AnalysisResult>(generatePpaAnalysis(SAMPLE_IMAGES[0].expectedScore, SAMPLE_IMAGES[0].id));
+  const [resultB, setResultB] = useState<AnalysisResult>(generatePpaAnalysis(SAMPLE_IMAGES[1].expectedScore, SAMPLE_IMAGES[1].id));
   const [loadingA, setLoadingA] = useState<boolean>(false);
   const [loadingB, setLoadingB] = useState<boolean>(false);
 

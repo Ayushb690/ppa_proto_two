@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Dropzone } from './components/Dropzone';
 import { ScoreGauge } from './components/ScoreGauge';
@@ -6,19 +6,34 @@ import { ExplainabilityPanel } from './components/ExplainabilityPanel';
 import { AttributeRadar } from './components/AttributeRadar';
 import { PromptTable } from './components/PromptTable';
 import { CompareView } from './components/CompareView';
-import { SAMPLE_IMAGES, generatePpaAnalysis } from './mockData';
+import { generatePpaAnalysis } from './mockData';
 import { AnalysisResult } from './types';
 import { checkBackendHealth, analyzeImage, HealthStatus } from './api';
-import { Sparkles, ArrowRight, ShieldCheck, Cpu } from 'lucide-react';
+import { ArrowRight, Cpu } from 'lucide-react';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'single' | 'compare' | 'database'>('single');
   const [health, setHealth] = useState<HealthStatus>({ online: false });
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(SAMPLE_IMAGES[0].url);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult>(
-    generatePpaAnalysis(SAMPLE_IMAGES[0].expectedScore)
-  );
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('ppa_theme');
+    if (saved === 'light' || saved === 'dark') return saved;
+    return 'dark';
+  });
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Sync theme with HTML class and localStorage
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    }
+    localStorage.setItem('ppa_theme', theme);
+  }, [theme]);
 
   // Poll backend health once on mount
   useEffect(() => {
@@ -27,8 +42,12 @@ export function App() {
     });
   }, []);
 
-  const handleImageSelected = async (file: File | null, url: string | null, seedScore?: number) => {
-    if (!url) return;
+  const handleImageSelected = async (file: File | null, url: string | null, seedScore?: number, sampleId?: string) => {
+    if (!url) {
+      setCurrentImageUrl(null);
+      setAnalysisResult(null);
+      return;
+    }
     setCurrentImageUrl(url);
     setIsLoading(true);
 
@@ -52,13 +71,13 @@ export function App() {
           }
         } catch {
           if (seedScore !== undefined) {
-            setAnalysisResult(generatePpaAnalysis(seedScore));
+            setAnalysisResult(generatePpaAnalysis(seedScore, sampleId));
           }
         }
       } else if (seedScore !== undefined) {
         // Preset sample image selected (offline simulation fallback)
         await new Promise((r) => setTimeout(r, 300));
-        setAnalysisResult(generatePpaAnalysis(seedScore));
+        setAnalysisResult(generatePpaAnalysis(seedScore, sampleId));
       }
     } finally {
       setIsLoading(false);
@@ -66,31 +85,23 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-cyan-500/20 selection:text-cyan-300">
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} health={health} />
+    <div className="min-h-screen flex flex-col bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300 selection:bg-cyan-500/20 selection:text-cyan-600 dark:selection:text-cyan-300">
+      <Header activeTab={activeTab} setActiveTab={setActiveTab} health={health} theme={theme} setTheme={setTheme} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Sub-header Banner */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-900">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-neutral-900">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center space-x-2">
-              <span>Image Aesthetics & Quality Assessment</span>
-              <span className="text-xs px-2 py-0.5 rounded-full font-mono bg-cyan-950 text-cyan-400 border border-cyan-800/60 hidden sm:inline-block">
-                Concept Bottleneck Model
-              </span>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Image Aesthetics & Quality Assessment
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Interpretable scoring powered by OpenCLIP ViT-B/16 and 260 human-readable antonym pairs.
-            </p>
           </div>
 
-          <div className="flex items-center space-x-3 text-xs font-mono text-slate-400 bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-800 self-start md:self-auto">
+          <div className="flex items-center space-x-3 text-xs font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-neutral-900/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-neutral-800 self-start md:self-auto">
             <span className="flex items-center space-x-1.5">
-              <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+              <Cpu className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
               <span>Weights: {health.online ? 'best.pt (Epoch 3)' : 'PARA Checkpoint'}</span>
             </span>
-            <span>·</span>
-            <span>28.68M Params</span>
           </div>
         </div>
 
@@ -103,37 +114,41 @@ export function App() {
               isLoading={isLoading}
             />
 
-            {/* Score & Gauge Card */}
-            <ScoreGauge result={analysisResult} />
+            {/* Score & Gauge Card and Detailed Breakdowns */}
+            {analysisResult && (
+              <>
+                <ScoreGauge result={analysisResult} />
 
-            {/* Core Explainability Panel: Positive Drivers vs Negative Penalties */}
-            <ExplainabilityPanel
-              positivePrompts={analysisResult.topPositivePrompts}
-              negativePrompts={analysisResult.topNegativePrompts}
-            />
+                {/* Core Explainability Panel: Positive Drivers vs Negative Penalties */}
+                <ExplainabilityPanel
+                  positivePrompts={analysisResult.topPositivePrompts}
+                  negativePrompts={analysisResult.topNegativePrompts}
+                />
 
-            {/* Multidimensional Radar & Technical IQA Breakdown */}
-            <AttributeRadar
-              aestheticAttributes={analysisResult.attributeBreakdown}
-              qualityAttributes={analysisResult.qualityBreakdown}
-            />
+                {/* Multidimensional Radar & Technical IQA Breakdown */}
+                <AttributeRadar
+                  aestheticAttributes={analysisResult.attributeBreakdown}
+                  qualityAttributes={analysisResult.qualityBreakdown}
+                />
 
-            {/* Bottom Callout to Full Table */}
-            <div className="glass-panel rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-slate-800">
-              <div>
-                <h4 className="text-sm font-semibold text-white">Explore Full 260 Prompt Pool</h4>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Inspect every prompt pair across the 4 supplementary categories with individual scores and weights.
-                </p>
-              </div>
-              <button
-                onClick={() => setActiveTab('database')}
-                className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-xs transition-all flex items-center space-x-2 shrink-0 shadow-lg shadow-cyan-500/20"
-              >
-                <span>View Full Prompt Pool</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+                {/* Bottom Callout to Full Table */}
+                <div className="glass-panel rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-slate-200 dark:border-neutral-800">
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Explore Full 260 Prompt Pool</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Inspect every prompt pair across the 4 supplementary categories with individual scores and weights.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('database')}
+                    className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-xs transition-all flex items-center space-x-2 shrink-0 shadow-lg shadow-cyan-500/20 cursor-pointer"
+                  >
+                    <span>View Full Prompt Pool</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -142,23 +157,9 @@ export function App() {
 
         {/* Tab 3: Full 260 Prompt Pool Database */}
         {activeTab === 'database' && (
-          <PromptTable prompts={analysisResult.allPrompts} />
+          <PromptTable prompts={analysisResult ? analysisResult.allPrompts : generatePpaAnalysis().allPrompts} />
         )}
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-6 mt-12 text-center text-xs text-slate-500 font-mono">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>
-            PPA: Probabilistic Prompt Adaptation for Unified Image Aesthetics and Quality Assessment (CVPR 2026)
-          </p>
-          <div className="flex items-center space-x-4">
-            <span className="text-slate-400">PARA Benchmark (GIAA)</span>
-            <span>·</span>
-            <span className="text-cyan-400">SRCC: 0.9155 / PLCC: 0.9078</span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
