@@ -47,9 +47,7 @@ uv run python scripts/verify_integration.py
 
 **2. Start the backend**
 
-```bash
-PYTHONPATH=src uv run python scripts/serve.py --port 8000
-```
+```bash.\.venv\Scripts\python.exe scripts/serve.py --port 8000```
 
 **3. Start the frontend**
 
